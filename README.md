@@ -1,8 +1,8 @@
 # klog
 [![Build Status](https://drone.io/github.com/shxsun/klog/status.png)](https://drone.io/github.com/shxsun/klog/latest)
 
-**write for golang**
-*Developing now.*
+**library for golang**
+*Still developing now.*
 
 First thanks to the 3 people who stars of the project **beelog**. 
 This is what that encouraged me to rewrite [beelog](https://github.com/shxsun/beelog), and so **klog** comes out.
@@ -10,7 +10,9 @@ This is what that encouraged me to rewrite [beelog](https://github.com/shxsun/be
 klog learn from a lot other log system for golang, like [beego](http://github.com/astaxie/beego), [seelog](https://github.com/cihub/seelog), [glog](https://github.com/golang/glog), [qiniu-log](https://github.com/qiniu/log).
 
 # Introdution
-From my experience of some project. I think there are only 4 level needed. `Info Warning Error Fatal`
+From my experience of some project. I think there are only 5 level needed. `Debug Info Warning Error Fatal`
+
+Default level is Info. Use SetLevel to change.
 
 Default output style is 
 ```
@@ -18,10 +20,11 @@ Default output style is
 ```
 Color output is auto enabled in console, and closed when redirected to a file.
 
-Info colored with green, and Warning is blue, Error is yellow, fatal is red.
+Debug colored with gray and Info is green, Warning is blue, Error is yellow, fatal is red.
 
 # How to use
-## ths simple example
+**below this is a simple example**
+
 ```
 package main
 import "github.com/shxsun/klog"
@@ -31,7 +34,7 @@ func main(){
 	k.Infof("Hi %s.", "Susan")
 	k.Warning("Oh my god, you are alive!")
 	k.Error("Yes, but I will go to Mars tomorrow. So only one day with you")
-	k.Fatal("Oh no, donot leave me again... faint")
+	k.Fatal("Oh no, donot leave me again... faint") // Fatal will call os.Exit(1)
 }
 ```
 
