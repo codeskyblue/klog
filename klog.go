@@ -30,28 +30,29 @@ var levels = []string{
 }
 
 var colors = []string{
+	"Cyan",
 	"Green",
-	"Red",
-	"Red",
-	"Red",
+	"Magenta",
+	"Yellow",
 	"Red",
 }
 
 type Logger struct {
-	out   io.Writer
-	level Level
-	slog  *log.Logger
-	color *ansi
+	out     io.Writer
+	level   Level
+	logging *log.Logger
+	color   *ansi
 }
 
+// default level is debug
 func NewLogger(out io.Writer, prefix string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
 	return &Logger{
-		level: LInfo,
-		slog:  log.New(out, prefix, log.Ldate|log.Ltime),
-		color: &ansi{isTermOutput() && runtime.GOOS != "windows"},
+		level:   LInfo,
+		logging: log.New(out, prefix, log.Ldate|log.Ltime),
+		color:   &ansi{isTermOutput() && runtime.GOOS != "windows"},
 	}
 }
 
@@ -63,7 +64,7 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 	if level < l.level {
 		return
 	}
-	var s string = levels[int(level)]
+	var levelName string = levels[int(level)]
 	var colorName string = colors[int(level)]
 	// Retrieve the stack infos
 	_, file, line, ok := runtime.Caller(2)
@@ -75,41 +76,54 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 	}
 
 	method, exists := l.color.getMethod(colorName)
-	var levelStr string
-	if !exists {
-		levelStr = s
-	} else {
-		levelStr = method.Func.Call([]reflect.Value{
+	if exists {
+		levelName = method.Func.Call([]reflect.Value{
 			reflect.ValueOf(l.color),
-			reflect.ValueOf(s)},
+			reflect.ValueOf(levelName)},
 		)[0].String()
 	}
 
-	l.slog.Printf(fmt.Sprintf("[%s] %s:%d  %s\n", levelStr, file, line, format), a...)
-	if level == LFatal {
-		os.Exit(1)
+	if format == "" {
+		l.logging.Println(fmt.Sprintf("[%s] %s:%d  ", levelName, file, line) + fmt.Sprint(a...))
+	} else {
+		l.logging.Printf(fmt.Sprintf("[%s] %s:%d  %s\n", levelName, file, line, format), a...)
 	}
+}
 
+func (l *Logger) Debug(v ...interface{}) {
+	l.write(LDebug, "", v...)
 }
 
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	l.write(LDebug, format, v...)
 }
 
-/*
-func Debug(v ...interface{}) {
-	logPrint(LDebug, "%v", v)
+func (l *Logger) Info(v ...interface{}) {
+	l.write(LInfo, "", v...)
+}
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.write(LInfo, format, v...)
+}
+func (l *Logger) Warn(v ...interface{}) {
+	l.write(LWarning, "", v...)
+}
+func (l *Logger) Warnf(format string, v ...interface{}) {
+	l.write(LWarning, format, v...)
+}
+func (l *Logger) Error(v ...interface{}) {
+	l.write(LError, "", v...)
+}
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.write(LError, format, v...)
 }
 
-func Info(v ...interface{}) {
-	logPrint(LInfo, "%v", v)
+// will also call os.Exit(1)
+func (l *Logger) Fatal(v ...interface{}) {
+	l.Fatalf("", v...)
 }
 
-func Warn(v ...interface{}) {
-	logPrint(LWarning, "%v", v)
+// will also call os.Exit(1)
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	l.write(LFatal, format, v...)
+	os.Exit(1)
 }
-
-func Error(v ...interface{}) {
-	logPrint(LError, "%v", v)
-}
-*/
