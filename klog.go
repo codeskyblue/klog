@@ -45,11 +45,12 @@ var colors = []string{
 }
 
 type Logger struct {
-	out     io.Writer
-	level   Level
-	logging *log.Logger
-	color   *ansi
-	flags   int
+	out         io.Writer
+	level       Level
+	logging     *log.Logger
+	color       *ansi
+	flags       int
+	colorEnable bool
 }
 
 // default level is debug
@@ -57,12 +58,12 @@ func NewLogger(out io.Writer, prefix string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
-	colorEnable := isTermOutput() //&& runtime.GOOS != "windows"
 	return &Logger{
-		level:   LInfo,
-		logging: log.New(out, prefix, log.Ldate|log.Ltime),
-		color:   &ansi{colorEnable},
-		flags:   Fstdflag,
+		level:       LInfo,
+		logging:     log.New(out, prefix, log.Ldate|log.Ltime),
+		color:       &ansi{},
+		colorEnable: isTermOutput() && runtime.GOOS != "windows",
+		flags:       Fstdflag,
 	}
 }
 
@@ -74,11 +75,6 @@ func (l *Logger) SetLevel(level Level) {
 	l.level = level
 }
 
-// just an empty function.
-// FIXME:defer k.Flush() // When call Fatal(..), program will call Flush too(so never mind if you forgot).
-//func (l *Logger) Flush(){
-//}
-
 func (l *Logger) write(level Level, format string, a ...interface{}) {
 	if level < l.level {
 		return
@@ -86,7 +82,7 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 	var levelName string = levels[int(level)]
 	var preStr string
 
-	if l.flags&Fcolor != 0 {
+	if l.colorEnable && l.flags&Fcolor != 0 {
 		var colorName string = colors[int(level)]
 		method, exists := l.color.getMethod(colorName)
 		if exists {
@@ -111,9 +107,9 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 
 	sep := " "
 	if format == "" {
-		l.logging.Println(preStr + sep + fmt.Sprint(a...))
+		l.logging.Print(preStr + sep + fmt.Sprint(a...))
 	} else {
-		l.logging.Println(preStr + sep + fmt.Sprintf(format, a...))
+		l.logging.Print(preStr + sep + fmt.Sprintf(format, a...))
 	}
 }
 
