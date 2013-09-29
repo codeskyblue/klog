@@ -30,8 +30,8 @@ const (
 
 var levels = []string{
 	"[DEBUG]",
-	"[INFO_]",
-	"[WARN_]",
+	"[INFO.]",
+	"[WARN.]",
 	"[ERROR]",
 	"[FATAL]",
 }
@@ -82,16 +82,6 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 	var levelName string = levels[int(level)]
 	var preStr string
 
-	if l.colorEnable && l.flags&Fcolor != 0 {
-		var colorName string = colors[int(level)]
-		method, exists := l.color.getMethod(colorName)
-		if exists {
-			levelName = method.Func.Call([]reflect.Value{
-				reflect.ValueOf(l.color),
-				reflect.ValueOf(levelName)},
-			)[0].String()
-		}
-	}
 	preStr += levelName
 	if l.flags&Fshortfile != 0 {
 		// Retrieve the stack infos
@@ -105,12 +95,25 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		preStr = fmt.Sprintf("%s %s:%d", preStr, file, line)
 	}
 
-	sep := " "
+	var outstr, sep = "", " "
 	if format == "" {
-		l.logging.Print(preStr + sep + fmt.Sprint(a...))
+		outstr = preStr + sep + fmt.Sprint(a...)
 	} else {
-		l.logging.Print(preStr + sep + fmt.Sprintf(format, a...))
+		outstr = preStr + sep + fmt.Sprintf(format, a...)
 	}
+	outstr = strings.TrimSuffix(outstr, "\n")
+
+	if l.colorEnable && l.flags&Fcolor != 0 {
+		var colorName string = colors[int(level)]
+		method, exists := l.color.getMethod(colorName)
+		if exists {
+			outstr = method.Func.Call([]reflect.Value{
+				reflect.ValueOf(l.color),
+				reflect.ValueOf(outstr)},
+			)[0].String()
+		}
+	}
+	l.logging.Print(outstr)
 }
 
 func (l *Logger) Debug(v ...interface{}) {

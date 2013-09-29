@@ -18,7 +18,7 @@ func TestDebugf(t *testing.T) {
 	k.SetLevel(LDebug)
 	k.Debugf("hello %s", "klog")
 	outStr := string(out.Bytes())
-	if !strings.HasSuffix(outStr, "hello klog\n") {
+	if !strings.Contains(outStr, "hello klog") {
 		t.Errorf("expect suffix with %s, but receive %s",
 			strconv.Quote("hello klog"),
 			strconv.Quote(outStr))
