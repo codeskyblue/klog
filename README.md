@@ -2,7 +2,6 @@
 [![Build Status](https://drone.io/github.com/shxsun/klog/status.png)](https://drone.io/github.com/shxsun/klog/latest)
 
 **library for golang**
-v0.1
 
 First thanks to the 3 people who stars of the project **beelog** 
 which encouraged me to rewrite [beelog](https://github.com/shxsun/beelog), and **klog** comes out.
@@ -16,15 +15,20 @@ Default level is Info. Use `SetLevel(level)` to change.
 
 Default output style is 
 ```
-2006/01/02 03:04:05 prefix [INFO] hello.go:7  hello world
+prefix 2006/01/02 03:04:05 [INFO] hello world
 ```
+Use `SetFlags(klog.Fdevflag)`  will change output to 
+```
+prefix 2006/01/02 03:04:05 [INFO] hello.go:7 hello world
+```
+
 Color output is default enabled in console, and auto closed when redirected to a file.
 ```
-DEBUG	"Cyan",
-INFO	"Green",
+DEBUG  "Cyan",
+INFO   "Green",
 WARN   "Magenta",
-ERROR "Yellow",
-FATAL	"Red",
+ERROR  "Yellow",
+FATAL  "Red",
 ```
 
 # How to use
@@ -35,7 +39,6 @@ package main
 import "github.com/shxsun/klog"
 func main(){
 	k := klog.NewLogger(nil, "") // Write to stdout and without prefix
-	defer k.Flush() // When call Fatal(..), program will call Flush too(so never mind if you forgot).
 
 	k.Infof("Hi %s.", "Susan")
 	k.Warning("Oh my god, you are alive!")
