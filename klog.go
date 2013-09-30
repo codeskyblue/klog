@@ -145,7 +145,8 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 
 // will also call os.Exit(1)
 func (l *Logger) Fatal(v ...interface{}) {
-	l.Fatalf("", v...)
+	l.write(LFatal, "", v...)
+	os.Exit(1)
 }
 
 // will also call os.Exit(1)
