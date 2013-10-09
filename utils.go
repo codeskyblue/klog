@@ -16,3 +16,11 @@ func isTermOutput() (result bool) {
 	}
 	return false
 }
+
+//method, exists := l.color.getMethod(colorName)
+//if exists {
+//	outstr = method.Func.Call([]reflect.Value{
+//		reflect.ValueOf(l.color),
+//		reflect.ValueOf(outstr)},
+//	)[0].String()
+//}

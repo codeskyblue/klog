@@ -3,10 +3,10 @@ package klog
 
 import (
 	"fmt"
+	"github.com/aybabtme/color"
 	"io"
 	"log"
 	"os"
-	"reflect"
 	"runtime"
 	"strings"
 )
@@ -36,12 +36,12 @@ var levels = []string{
 	"[FATAL]",
 }
 
-var colors = []string{
-	"Cyan",
-	"Green",
-	"Magenta",
-	"Yellow",
-	"Red",
+var colors = []color.Paint{
+	color.CyanPaint,
+	color.GreenPaint,
+	color.BlackPaint,
+	color.YellowPaint,
+	color.RedPaint,
 }
 
 type Logger struct {
@@ -104,15 +104,10 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 	outstr = strings.TrimSuffix(outstr, "\n")
 
 	if l.colorEnable && l.flags&Fcolor != 0 {
-		var colorName string = colors[int(level)]
-		method, exists := l.color.getMethod(colorName)
-		if exists {
-			outstr = method.Func.Call([]reflect.Value{
-				reflect.ValueOf(l.color),
-				reflect.ValueOf(outstr)},
-			)[0].String()
-		}
+		brush := color.NewBrush("", colors[int(level)])
+		outstr = brush(outstr)
 	}
+
 	l.logging.Print(outstr)
 }
 
