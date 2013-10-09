@@ -49,7 +49,6 @@ type Logger struct {
 	out         io.Writer
 	level       Level
 	logging     *log.Logger
-	color       *ansi
 	flags       int
 	colorEnable bool
 }
@@ -62,7 +61,6 @@ func NewLogger(out io.Writer, prefix string) *Logger {
 	return &Logger{
 		level:       LInfo,
 		logging:     log.New(out, prefix, log.Ldate|log.Ltime),
-		color:       &ansi{},
 		colorEnable: isTermOutput() && runtime.GOOS != "windows",
 		flags:       Fstdflag,
 	}
