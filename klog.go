@@ -66,12 +66,24 @@ func NewLogger(out io.Writer, prefix string) *Logger {
 	}
 }
 
+// set flags to change klog output style
 func (l *Logger) SetFlags(flag int) {
 	l.flags = flag
 }
 
+// get logger flags
+func (l *Logger) Flags() int {
+	return l.flags
+}
+
+// set output level. L[Debug|Warning...]
 func (l *Logger) SetLevel(level Level) {
 	l.level = level
+}
+
+// get current level.
+func (l *Logger) Level() Level {
+	return l.level
 }
 
 func (l *Logger) write(level Level, format string, a ...interface{}) {
