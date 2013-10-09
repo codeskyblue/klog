@@ -34,6 +34,8 @@ FATAL  "Red",
 # How to use
 **below this is a simple example**
 
+`go get github.com/shxsun/klog`
+
 ```
 package main
 import "github.com/shxsun/klog"

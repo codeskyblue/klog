@@ -16,6 +16,7 @@ type Level int
 const (
 	Fshortfile = 1 << iota // show filename:lineno
 	Fcolor
+
 	Fdevflag = Fshortfile | Fcolor // for develop use
 	Fstdflag = Fcolor
 )
@@ -39,9 +40,9 @@ var levels = []string{
 var colors = []color.Paint{
 	color.CyanPaint,
 	color.GreenPaint,
-	color.BlackPaint,
 	color.YellowPaint,
 	color.RedPaint,
+	color.DarkRedPaint,
 }
 
 type Logger struct {
