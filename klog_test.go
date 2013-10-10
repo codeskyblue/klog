@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var K *Logger = NewLogger(nil, "")
+var K *Logger = NewLogger(nil, "i am prefix ")
 var out = bytes.NewBuffer(nil)
 var kt *Logger = NewLogger(out, "")
 
@@ -32,6 +32,12 @@ func TestAll(t *testing.T) {
 	K.Warn("msg:warn")
 	K.Error("msg:error")
 	//K.Fatal("msg:fatal")
+}
+
+func TestNoColor(t *testing.T) {
+	flags := K.Flags()
+	K.SetFlags(flags & ^Fcolor)
+	K.Info("this info msg has no color")
 }
 
 func TestSetLevel(t *testing.T) {

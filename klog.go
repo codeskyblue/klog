@@ -3,22 +3,27 @@ package klog
 
 import (
 	"fmt"
-	"github.com/aybabtme/color"
 	"io"
 	"log"
 	"os"
 	"runtime"
 	"strings"
+	"time"
+
+	"github.com/aybabtme/color"
 )
 
 type Level int
 
 const (
 	Fshortfile = 1 << iota // show filename:lineno
+	Fdate
+	Ftime
 	Fcolor
 
-	Fdevflag = Fshortfile | Fcolor // for develop use
-	Fstdflag = Fcolor
+	Fdatetime = Fdate | Ftime
+	Fdevflag  = Fdatetime | Fshortfile | Fcolor // for develop use
+	Fstdflag  = Fdatetime | Fcolor
 )
 
 const (
@@ -42,7 +47,7 @@ var colors = []color.Paint{
 	color.GreenPaint,
 	color.YellowPaint,
 	color.RedPaint,
-	color.DarkRedPaint,
+	color.PurplePaint,
 }
 
 type Logger struct {
@@ -50,6 +55,7 @@ type Logger struct {
 	level       Level
 	logging     *log.Logger
 	flags       int
+	prefix      string
 	colorEnable bool
 }
 
@@ -60,9 +66,10 @@ func NewLogger(out io.Writer, prefix string) *Logger {
 	}
 	return &Logger{
 		level:       LInfo,
-		logging:     log.New(out, prefix, log.Ldate|log.Ltime),
-		colorEnable: isTermOutput() && runtime.GOOS != "windows",
+		logging:     log.New(out, "", 0),
+		colorEnable: runtime.GOOS != "windows" && isTermOutput(),
 		flags:       Fstdflag,
+		prefix:      prefix,
 	}
 }
 
@@ -91,9 +98,23 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		return
 	}
 	var levelName string = levels[int(level)]
-	var preStr string
+	var sep = " "
+	var prefix, outstr = l.prefix, ""
 
-	preStr += levelName
+	if l.flags&Fdatetime != 0 {
+		now := time.Now()
+		layout := ""
+		if l.flags&Fdate != 0 {
+			layout += "2006/01/02"
+		}
+		if l.flags&Ftime != 0 {
+			layout += " 15:04:05"
+		}
+		layout = strings.TrimSpace(layout)
+		prefix += now.Format(layout)
+	}
+
+	outstr += levelName
 	if l.flags&Fshortfile != 0 {
 		// Retrieve the stack infos
 		_, file, line, ok := runtime.Caller(2)
@@ -103,14 +124,13 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		} else {
 			file = file[strings.LastIndex(file, "/")+1:]
 		}
-		preStr = fmt.Sprintf("%s %s:%d", preStr, file, line)
+		outstr = fmt.Sprintf("%s %s:%d", outstr, file, line)
 	}
 
-	var outstr, sep = "", " "
 	if format == "" {
-		outstr = preStr + sep + fmt.Sprint(a...)
+		outstr = outstr + sep + fmt.Sprint(a...)
 	} else {
-		outstr = preStr + sep + fmt.Sprintf(format, a...)
+		outstr = outstr + sep + fmt.Sprintf(format, a...)
 	}
 	outstr = strings.TrimSuffix(outstr, "\n")
 
@@ -119,7 +139,7 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		outstr = brush(outstr)
 	}
 
-	l.logging.Print(outstr)
+	l.logging.Print(prefix + sep + outstr)
 }
 
 func (l *Logger) Debug(v ...interface{}) {
