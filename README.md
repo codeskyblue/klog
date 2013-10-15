@@ -34,6 +34,8 @@ FATAL  "Red",
 # How to use
 **below this is a simple example**
 
+More usage please reference <http://gowalker.org/github.com/shxsun/klog>
+
 `go get github.com/shxsun/klog`
 
 ```
@@ -49,4 +51,5 @@ func main(){
 }
 ```
 
-More usage please reference <http://gowalker.org/github.com/shxsun/klog>
+<script type="text/javascript" src="http://asciinema.org/a/5933.js" id="asciicast-5933" async></script>
+
