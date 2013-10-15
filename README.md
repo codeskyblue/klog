@@ -38,18 +38,17 @@ More usage please reference <http://gowalker.org/github.com/shxsun/klog>
 
 `go get github.com/shxsun/klog`
 
-```
+```go
 package main
 import "github.com/shxsun/klog"
 func main(){
 	k := klog.NewLogger(nil, "") // Write to stdout and without prefix
 
 	k.Infof("Hi %s.", "Susan")
-	k.Warning("Oh my god, you are alive!")
+	k.Warn("Oh my god, you are alive!")
 	k.Error("Yes, but I will go to Mars tomorrow. So only one day with you")
 	k.Fatal("Oh no, donot leave me again... faint") // Fatal will call os.Exit(1)
 }
 ```
 
-<script type="text/javascript" src="http://asciinema.org/a/5933.js" id="asciicast-5933" async></script>
-
+![sample](images/sample.png)

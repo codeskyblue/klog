@@ -27,10 +27,10 @@ func TestDebugf(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	K.SetLevel(LDebug)
-	K.Debug("msg:debug")
-	K.Info("msg:info")
-	K.Warn("msg:warn")
-	K.Error("msg:error")
+	K.Debug("this is debug")
+	K.Info("this is info")
+	K.Warn("this is warn")
+	K.Error("this is error")
 	//K.Fatal("msg:fatal")
 }
 
