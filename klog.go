@@ -34,6 +34,11 @@ const (
 	LFatal
 )
 
+var (
+	DevLog = NewLogger(os.Stdout, "").SetFlags(Fdevflag).SetLevel(LDebug)
+	StdLog = NewLogger(os.Stdout, "").SetFlags(Fstdflag).SetLevel(LWarning)
+)
+
 var levels = []string{
 	"[DEBUG]",
 	"[INFO.]",
@@ -74,8 +79,9 @@ func NewLogger(out io.Writer, prefix string) *Logger {
 }
 
 // set flags to change klog output style
-func (l *Logger) SetFlags(flag int) {
+func (l *Logger) SetFlags(flag int) *Logger {
 	l.flags = flag
+	return l
 }
 
 // get logger flags
@@ -84,8 +90,9 @@ func (l *Logger) Flags() int {
 }
 
 // set output level. L[Debug|Warning...]
-func (l *Logger) SetLevel(level Level) {
+func (l *Logger) SetLevel(level Level) *Logger {
 	l.level = level
+	return l
 }
 
 // get current level.
@@ -114,7 +121,6 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		prefix += now.Format(layout)
 	}
 
-	outstr += levelName
 	if l.flags&Fshortfile != 0 {
 		// Retrieve the stack infos
 		_, file, line, ok := runtime.Caller(2)
@@ -124,8 +130,11 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		} else {
 			file = file[strings.LastIndex(file, "/")+1:]
 		}
-		outstr = fmt.Sprintf("%s %s:%d", outstr, file, line)
+		//outstr = fmt.Sprintf("%s %s:%d", outstr, file, line)
+		prefix = fmt.Sprintf("%s %s:%d", prefix, file, line)
 	}
+
+	outstr += levelName
 
 	if format == "" {
 		outstr = outstr + sep + fmt.Sprint(a...)

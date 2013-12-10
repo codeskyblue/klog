@@ -50,5 +50,16 @@ func main(){
 	k.Fatal("Oh no, donot leave me again... faint") // Fatal will call os.Exit(1)
 }
 ```
-
 ![sample](images/sample.png)
+
+Or you can simply use default 2 default `*klog.Logger: klog.StdLog, klog.DevLog`
+
+The usage is very simple.
+```
+klog.StdLog.Warnf("Hello world")
+// output: 2013/12/01 12:00:00 [Warn] Hello world
+// StdLog default level is Warning
+
+klog.DevLog.Debugf("Nice")
+// output: 2013/12/01 12:00:00 main.go:12 [DEBUG] Hello world
+```

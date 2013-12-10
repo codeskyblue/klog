@@ -75,3 +75,9 @@ func BenchmarkTest(b *testing.B) {
 		k.Error("ddddddddddddddddddd", "wwwwwwwwwwwwwwwwwwww")
 	}
 }
+
+func TestDefaultLog(t *testing.T) {
+	DevLog.Debug("dev debug will show file:line")
+	StdLog.Debug("std debug will not showen")
+	StdLog.Warn("warn message will show")
+}
