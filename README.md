@@ -41,7 +41,18 @@ More usage please reference <http://gowalker.org/github.com/shxsun/klog>
 ```go
 package main
 import "github.com/shxsun/klog"
+
 func main(){
+	// Example 1
+	// use klog.StdLog, klog.DevLog for logging
+	klog.StdLog.Warnf("Hello world")
+	// output: 2013/12/01 12:00:00 [Warn] Hello world
+	// StdLog default level is Warning
+	
+	klog.DevLog.Debugf("Nice")
+	// output: 2013/12/01 12:00:00 main.go:12 [DEBUG] Hello world
+	
+	// Example 2
 	k := klog.NewLogger(nil, "") // Write to stdout and without prefix
 
 	k.Infof("Hi %s.", "Susan")
@@ -51,15 +62,3 @@ func main(){
 }
 ```
 ![sample](images/sample.png)
-
-Or you can simply use default 2 default `*klog.Logger: klog.StdLog, klog.DevLog`
-
-The usage is very simple.
-```
-klog.StdLog.Warnf("Hello world")
-// output: 2013/12/01 12:00:00 [Warn] Hello world
-// StdLog default level is Warning
-
-klog.DevLog.Debugf("Nice")
-// output: 2013/12/01 12:00:00 main.go:12 [DEBUG] Hello world
-```
