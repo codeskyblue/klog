@@ -53,8 +53,14 @@ func main(){
 	// output: 2013/12/01 12:00:00 main.go:12 [DEBUG] Hello world
 	
 	// Example 2
-	k := klog.NewLogger(nil, "") // Write to stdout and without prefix
+	k2 := klog.NewLogger(nil) // Write to stdout
+	//k := klog.NewLogger(nil, "option-prefix") // with prefix
+	
+	// Example 3
+	k3, err := klog.NewFileLogger("app.log")
+	if err != nil { ...	}
 
+	k = klog.DevLog
 	k.Infof("Hi %s.", "Susan")
 	k.Warn("Oh my god, you are alive!")
 	k.Error("Yes, but I will go to Mars tomorrow. So only one day with you")

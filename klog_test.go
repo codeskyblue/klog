@@ -3,6 +3,7 @@ package klog
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -11,6 +12,26 @@ import (
 var K *Logger = NewLogger(nil, "i am prefix ")
 var out = bytes.NewBuffer(nil)
 var kt *Logger = NewLogger(out, "")
+
+func TestNewFileLogger(t *testing.T) {
+	filename := "testdata/tmpfile"
+	log, err := NewFileLogger(filename)
+	if err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		os.Remove(filename)
+	}()
+	log.Info("hello")
+	fd, err := os.Open(filename)
+	if err != nil {
+		t.Error(err)
+	}
+	stat, _ := fd.Stat()
+	if stat.Size() <= 0 {
+		t.Error("expect write into something, but klog write nothing")
+	}
+}
 
 func TestDebugf(t *testing.T) {
 	out := bytes.NewBuffer(nil)
@@ -78,6 +99,8 @@ func BenchmarkTest(b *testing.B) {
 
 func TestDefaultLog(t *testing.T) {
 	DevLog.Debug("dev debug will show file:line")
+	DevLog.Warn("dev warn")
+	//DevLog.Fatal("fatal")
 	StdLog.Debug("std debug will not showen")
 	StdLog.Warn("warn message will show")
 }

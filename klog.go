@@ -36,7 +36,7 @@ const (
 
 var (
 	DevLog = NewLogger(os.Stdout, "").SetFlags(Fdevflag).SetLevel(LDebug)
-	StdLog = NewLogger(os.Stdout, "").SetFlags(Fstdflag).SetLevel(LWarning)
+	StdLog = NewLogger(os.Stdout, "").SetFlags(Fstdflag).SetLevel(LInfo)
 )
 
 var levels = []string{
@@ -64,8 +64,16 @@ type Logger struct {
 	colorEnable bool
 }
 
+func NewFileLogger(filename string) (log *Logger, err error) {
+	fd, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	if err != nil {
+		return
+	}
+	return NewLogger(fd), nil
+}
+
 // default level is debug
-func NewLogger(out io.Writer, prefix string) *Logger {
+func NewLogger(out io.Writer, prefix ...string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
@@ -74,7 +82,7 @@ func NewLogger(out io.Writer, prefix string) *Logger {
 		logging:     log.New(out, "", 0),
 		colorEnable: runtime.GOOS != "windows" && isTermOutput(),
 		flags:       Fstdflag,
-		prefix:      prefix,
+		prefix:      strings.Join(prefix, " "),
 	}
 }
 
