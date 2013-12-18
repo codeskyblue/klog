@@ -64,12 +64,13 @@ type Logger struct {
 	colorEnable bool
 }
 
+// Default LogLevel Debug
 func NewFileLogger(filename string) (log *Logger, err error) {
 	fd, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		return
 	}
-	return NewLogger(fd), nil
+	return NewLogger(fd).SetFlags(Fdevflag).SetLevel(LDebug), nil
 }
 
 // default level is debug
@@ -80,7 +81,7 @@ func NewLogger(out io.Writer, prefix ...string) *Logger {
 	return &Logger{
 		level:       LInfo,
 		logging:     log.New(out, "", 0),
-		colorEnable: runtime.GOOS != "windows" && isTermOutput(),
+		colorEnable: runtime.GOOS != "windows" && isTermOutput(), // TODO: isTemOutput is not so good
 		flags:       Fstdflag,
 		prefix:      strings.Join(prefix, " "),
 	}
