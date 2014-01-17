@@ -41,8 +41,8 @@ var (
 
 var levels = []string{
 	"[DEBUG]",
-	"[INFO.]",
-	"[WARN.]",
+	"[INFO]",
+	"[WARN]",
 	"[ERROR]",
 	"[FATAL]",
 }
@@ -146,7 +146,9 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 	outstr += levelName
 
 	if format == "" {
-		outstr = outstr + sep + fmt.Sprint(a...)
+		for _, i := range a {
+			outstr += sep + fmt.Sprintf("%v", i)
+		}
 	} else {
 		outstr = outstr + sep + fmt.Sprintf(format, a...)
 	}
