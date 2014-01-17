@@ -8,7 +8,7 @@ import (
 
 func isTermOutput() (result bool) {
 	switch runtime.GOOS {
-	case "linux":
+	case "linux", "darwin":
 		fi, _ := os.Stdout.Stat()
 		return fi.Mode()&os.ModeCharDevice == os.ModeCharDevice
 	case "windows":
