@@ -2,10 +2,8 @@
 package klog
 
 import (
-	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -38,7 +36,7 @@ const (
 
 var (
 	DevLog = NewLogger(os.Stdout, "").SetFlags(Fdevflag).SetLevel(LDebug)
-	StdLog = NewLogger(os.Stdout, "").SetFlags(Fstdflag).SetLevel(LInfo)
+	StdLog = NewLogger(os.Stderr, "").SetFlags(Fstdflag).SetLevel(LInfo)
 )
 
 var levels = []string{
@@ -62,10 +60,8 @@ var mu = &sync.Mutex{}
 type Logger struct {
 	out         io.Writer
 	level       Level
-	writer      *bufio.Writer
-	wrfd        io.Writer
+	writer      io.Writer
 	flags       int
-	closed      bool
 	prefix      string
 	colorEnable bool
 }
@@ -86,8 +82,7 @@ func NewLogger(out io.Writer, prefix ...string) *Logger {
 	}
 	return &Logger{
 		level:       LInfo,
-		writer:      bufio.NewWriter(out),
-		wrfd:        out,
+		writer:      out,
 		colorEnable: runtime.GOOS != "windows" && isTermOutput(), // TODO: isTemOutput is not so good
 		flags:       Fstdflag,
 		prefix:      strings.Join(prefix, " "),
@@ -169,16 +164,7 @@ func (l *Logger) write(level Level, format string, a ...interface{}) (n int, err
 
 	mu.Lock()
 	defer mu.Unlock()
-	if l.closed {
-		return 0, nil
-	}
-	//defer l.writer.Flush()
-	return io.WriteString(l.wrfd, prefix+sep+outstr)
-	//return l.writer.WriteString(prefix + sep + outstr)
-}
-
-func (l *Logger) Flush() error {
-	return l.writer.Flush()
+	return l.writer.Write([]byte(prefix + sep + outstr))
 }
 
 func (l *Logger) Debug(v ...interface{}) {
@@ -208,27 +194,12 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.write(LError, format, v...)
 }
 
-func (l *Logger) Close() error {
-	mu.Lock()
-	defer mu.Unlock()
-	l.closed = true
-	if f, ok := l.wrfd.(io.WriteCloser); ok {
-		return f.Close()
-	}
-	return nil
-}
-
-// will also call os.Exit(1)
 func (l *Logger) Fatalf(format string, v ...interface{}) {
-	log.Fatalf(format, v...)
-	//_, err := l.write(LFatal, format, v...)
-	//l.Close()
-	//os.Exit(1)
+	l.write(LFatal, format, v...)
+	os.Exit(1)
 }
 
-// will also call os.Exit(1)
 func (l *Logger) Fatal(v ...interface{}) {
-	log.Fatal(v...)
-	//l.write(LFatal, "", v...)
-	//os.Exit(1)
+	l.write(LFatal, "", v...)
+	os.Exit(1)
 }
