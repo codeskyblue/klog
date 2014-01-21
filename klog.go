@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -145,7 +144,6 @@ func (l *Logger) write(level Level, format string, a ...interface{}) (n int, err
 		} else {
 			file = file[strings.LastIndex(file, "/")+1:]
 		}
-		//outstr = fmt.Sprintf("%s %s:%d", outstr, file, line)
 		prefix = fmt.Sprintf("%s %s:%d", prefix, file, line)
 	}
 
@@ -175,15 +173,6 @@ func (l *Logger) write(level Level, format string, a ...interface{}) (n int, err
 
 func (l *Logger) Flush() error {
 	return l.writer.Flush()
-}
-
-func (l *Logger) Close() (err error) {
-	err = l.Close()
-	if f, ok := l.wrfd.(io.WriteCloser); ok {
-		log.Println("close")
-		err = f.Close()
-	}
-	return
 }
 
 func (l *Logger) Debug(v ...interface{}) {
@@ -216,13 +205,13 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 // will also call os.Exit(1)
 func (l *Logger) Fatal(v ...interface{}) {
 	l.write(LFatal, "", v...)
-	l.Close()
+	l.Flush()
 	os.Exit(1)
 }
 
 // will also call os.Exit(1)
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.write(LFatal, format, v...)
-	l.Close()
+	l.Flush()
 	os.Exit(1)
 }
