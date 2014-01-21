@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -62,7 +63,7 @@ type Logger struct {
 	out         io.Writer
 	level       Level
 	writer      *bufio.Writer
-	wrfd        io.WriteCloser
+	wrfd        io.Writer
 	flags       int
 	prefix      string
 	colorEnable bool
@@ -78,7 +79,7 @@ func NewFileLogger(filename string) (log *Logger, err error) {
 }
 
 // default level is debug
-func NewLogger(out io.WriteCloser, prefix ...string) *Logger {
+func NewLogger(out io.Writer, prefix ...string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
@@ -157,7 +158,9 @@ func (l *Logger) write(level Level, format string, a ...interface{}) (n int, err
 	} else {
 		outstr = outstr + sep + fmt.Sprintf(format, a...)
 	}
-	outstr = strings.TrimSuffix(outstr, "\n")
+	if !strings.HasSuffix(outstr, "\n") {
+		outstr += "\n"
+	}
 
 	if l.colorEnable && l.flags&Fcolor != 0 {
 		brush := color.NewBrush("", colors[int(level)])
@@ -166,6 +169,7 @@ func (l *Logger) write(level Level, format string, a ...interface{}) (n int, err
 
 	mu.Lock()
 	defer mu.Unlock()
+	defer l.writer.Flush()
 	return l.writer.WriteString(prefix + sep + outstr)
 }
 
@@ -173,9 +177,13 @@ func (l *Logger) Flush() error {
 	return l.writer.Flush()
 }
 
-func (l *Logger) Close() error {
-	l.Close()
-	return l.wrfd.Close()
+func (l *Logger) Close() (err error) {
+	err = l.Close()
+	if f, ok := l.wrfd.(io.WriteCloser); ok {
+		log.Println("close")
+		err = f.Close()
+	}
+	return
 }
 
 func (l *Logger) Debug(v ...interface{}) {
