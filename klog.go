@@ -2,12 +2,13 @@
 package klog
 
 import (
+	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/aybabtme/color"
@@ -55,10 +56,13 @@ var colors = []color.Paint{
 	color.PurplePaint,
 }
 
+var mu = &sync.Mutex{}
+
 type Logger struct {
 	out         io.Writer
 	level       Level
-	logging     *log.Logger
+	writer      *bufio.Writer
+	wrfd        io.WriteCloser
 	flags       int
 	prefix      string
 	colorEnable bool
@@ -74,13 +78,14 @@ func NewFileLogger(filename string) (log *Logger, err error) {
 }
 
 // default level is debug
-func NewLogger(out io.Writer, prefix ...string) *Logger {
+func NewLogger(out io.WriteCloser, prefix ...string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
 	return &Logger{
 		level:       LInfo,
-		logging:     log.New(out, "", 0),
+		writer:      bufio.NewWriter(out),
+		wrfd:        out,
 		colorEnable: runtime.GOOS != "windows" && isTermOutput(), // TODO: isTemOutput is not so good
 		flags:       Fstdflag,
 		prefix:      strings.Join(prefix, " "),
@@ -109,7 +114,7 @@ func (l *Logger) Level() Level {
 	return l.level
 }
 
-func (l *Logger) write(level Level, format string, a ...interface{}) {
+func (l *Logger) write(level Level, format string, a ...interface{}) (n int, err error) {
 	if level < l.level {
 		return
 	}
@@ -159,7 +164,18 @@ func (l *Logger) write(level Level, format string, a ...interface{}) {
 		outstr = brush(outstr)
 	}
 
-	l.logging.Print(prefix + sep + outstr)
+	mu.Lock()
+	defer mu.Unlock()
+	return l.writer.WriteString(prefix + sep + outstr)
+}
+
+func (l *Logger) Flush() error {
+	return l.writer.Flush()
+}
+
+func (l *Logger) Close() error {
+	l.Close()
+	return l.wrfd.Close()
 }
 
 func (l *Logger) Debug(v ...interface{}) {
@@ -192,11 +208,13 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 // will also call os.Exit(1)
 func (l *Logger) Fatal(v ...interface{}) {
 	l.write(LFatal, "", v...)
+	l.Close()
 	os.Exit(1)
 }
 
 // will also call os.Exit(1)
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.write(LFatal, format, v...)
+	l.Close()
 	os.Exit(1)
 }
